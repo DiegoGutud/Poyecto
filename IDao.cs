@@ -7,9 +7,9 @@ namespace ING_service
 {
     public interface IDao<T>
     {
-        T Agregar(T entidad);
+        void Agregar(T entidad);
 
-        T Modifcar(T entidad);
+        void Modifcar(T entidad);
 
         void Eliminar(T entidad);
 
