@@ -19,6 +19,8 @@ namespace ING_service
         [DataMember(Order = 4)]
         public decimal monto { get; set; }
         [DataMember(Order = 5)]
+        public List<Item> Items { get; set; }
+        [DataMember(Order = 6)]
         public int Estatus { get; set; }
     }
 }

@@ -22,6 +22,9 @@ namespace ING_service
             public int FactorPago { get; set; }
             [DataMember(Order = 6)]
             public int TiempoCierre { get; set; }
-        
+            [DataMember(Order = 7)]
+            public List<Item> Items { get; set; }
+            [DataMember(Order = 8)]
+            public List<Conjunto> Conjuntos { get; set; }
     }
 }
