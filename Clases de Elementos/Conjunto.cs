@@ -4,25 +4,23 @@ using System.Linq;
 using System.Web;
 using System.Runtime.Serialization;
 
-
 namespace ING_service
 {
     [DataContract]
-    public class Item
+    public class Conjunto
     {
+
         [DataMember(Order = 1)]
-        public int idItem { get; set; }
+        public int idConjunto { get; set; }
         [DataMember(Order = 2)]
-        public int idJuego{ get; set; }
+        public int idJuego { get; set; }
         [DataMember(Order = 3)]
-        public String nombre{ get; set; }
+        public String nombre { get; set; }
         [DataMember(Order = 4)]
-        public String valor { get; set; }
-        [DataMember(Order = 5)]
-        public int cupo { get; set; }
-        [DataMember(Order = 6)]
         public decimal monto { get; set; }
-        [DataMember(Order = 7)]
-        public int estatus { get; set; }
+        [DataMember(Order = 5)]
+        public List<Item> Items { get; set; }
+        [DataMember(Order = 6)]
+        public int Estatus { get; set; }
     }
 }
