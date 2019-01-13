@@ -19,11 +19,11 @@ namespace ING_service.Servicios
             return DaoJuego.Agregar(juego);
         }
 
-        public Juego Consultar(Juego juego)
+        public Juego Consultar(String nombreJuego)
         {
             IDaoFactoryDB DaoDB = new MySqlDaoFactory();
             IDaoJuego DaoJuego = DaoDB.CrearDaoJuego();
-            return DaoJuego.Consultar(juego);
+            return DaoJuego.Consultar(nombreJuego);
         }
 
         public List<Juego> ConsultarTodos()

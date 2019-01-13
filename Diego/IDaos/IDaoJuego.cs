@@ -13,7 +13,7 @@ namespace ING_service
 
         int Eliminar(Juego entidad);
 
-        Juego Consultar(Juego entidad);
+        Juego Consultar(String nombreJuego);
 
         List<Juego> ConsultarTodos();
     }
