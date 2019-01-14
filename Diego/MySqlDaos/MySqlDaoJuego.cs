@@ -21,18 +21,16 @@ namespace ING_service
 
 
         public int Agregar(Juego juego)
-        {
+        {  
 
             try
             {
                 connection = DB.connectToDB();
 
                 command = connection.CreateCommand();
-                command.CommandText = "INSERT INTO TB_JUEGO VALUES(@idJuego, @TipoJuego, @nombre, @Estatus, @FactorPago, @TiempoCierre)";
-                command.Parameters.AddWithValue("idJuego", juego.idJuego);
+                command.CommandText = "INSERT INTO TB_JUEGO VALUES(null, @TipoJuego, @nombre, 0, @FactorPago, @TiempoCierre)";
                 command.Parameters.AddWithValue("TipoJuego",juego.TipoJuego);
                 command.Parameters.AddWithValue("nombre", juego.nombre);
-                command.Parameters.AddWithValue("Estatus", juego.Estatus);
                 command.Parameters.AddWithValue("FactorPago", juego.FactorPago);
                 command.Parameters.AddWithValue("TiempoCierre", juego.TiempoCierre);
 
@@ -41,7 +39,24 @@ namespace ING_service
                 connection.Open();
 
 
-                return command.ExecuteNonQuery();
+                command.ExecuteNonQuery();
+
+
+                command = connection.CreateCommand();
+                command.CommandText = "SELECT ID_JUEGO FROM TB_JUEGO WHERE NOMBRE=@nombre";
+                command.Parameters.AddWithValue("nombre", juego.nombre);
+                command.CommandType = CommandType.Text;
+
+               
+
+                MySqlDataReader reader = command.ExecuteReader();
+
+
+
+                while (reader.Read())
+                {
+                    juego.idJuego = Convert.ToInt32(reader[0]);
+                }
 
             }
             catch (Exception)
@@ -55,12 +70,227 @@ namespace ING_service
                     connection.Close();
                 }
             }
+
+            if ( (AgregarItemsJuego(juego) == 0) || (AgregarConjuntoJuego(juego) == 0) )
+            {
+                return 0;
+            }
+
+            return 1;
+
+
+
            
+        }
+
+        public int AgregarItemsJuego(Juego juego)
+        {
+            
+            foreach (Item item in juego.Items)
+            {
+
+
+                try
+                {
+                    connection = DB.connectToDB();
+
+                    command = connection.CreateCommand();
+                    command.CommandText = "INSERT INTO tb_item VALUES (null, @idJuego, @nombre, @valor, @cupo, @monto, 0)";
+                    command.Parameters.AddWithValue("idJuego", juego.idJuego);
+                    command.Parameters.AddWithValue("nombre", item.nombre);
+                    command.Parameters.AddWithValue("valor", item.valor);
+                    command.Parameters.AddWithValue("cupo", item.cupo);
+                    command.Parameters.AddWithValue("monto", item.monto);
+
+
+                    command.CommandType = CommandType.Text;
+
+                    connection.Open();
+                    //
+                    command.ExecuteNonQuery();
+
+                    command = connection.CreateCommand();
+                    command.CommandText = "SELECT ID_ITEM FROM TB_ITEM WHERE NOMBRE=@nombre";
+                    command.Parameters.AddWithValue("nombre", item.nombre);
+                    command.CommandType = CommandType.Text;
+
+                    
+
+                    MySqlDataReader reader = command.ExecuteReader();
+
+
+
+                    while (reader.Read())
+                    {
+                        item.idItem = Convert.ToInt32(reader[0]);
+                    }
+
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+                finally
+                {
+                    if (connection != null)
+                    {
+                        connection.Close();
+                    }
+                }
+            }
+            
+            return 1;
+            
+        }
+
+        public int AgregarConjuntoJuego(Juego juego)
+        {
+            if (juego.Conjuntos != null)
+            {
+
+                foreach (Conjunto conjunto in juego.Conjuntos)
+                {
+
+
+                    try
+                    {
+                        connection = DB.connectToDB();
+
+                        command = connection.CreateCommand();
+                        command.CommandText = "INSERT INTO tb_conjunto VALUES (null, @idJuego, @nombre, @monto, 0)";
+                        command.Parameters.AddWithValue("idJuego", juego.idJuego);
+                        command.Parameters.AddWithValue("nombre", conjunto.nombre);
+                        command.Parameters.AddWithValue("monto", conjunto.monto);
+
+
+                        command.CommandType = CommandType.Text;
+
+                        connection.Open();
+
+
+                        command.ExecuteNonQuery();
+
+                        command = connection.CreateCommand();
+                        command.CommandText = "SELECT ID_CONJUNTO FROM TB_CONJUNTO WHERE NOMBRE=@nombre";
+                        command.Parameters.AddWithValue("nombre", conjunto.nombre);
+                        command.CommandType = CommandType.Text;
+
+
+
+                        MySqlDataReader reader = command.ExecuteReader();
+
+
+
+                        while (reader.Read())
+                        {
+                            conjunto.idConjunto = Convert.ToInt32(reader[0]);
+                        }
+
+                    }
+                    catch (Exception)
+                    {
+                        throw;
+                    }
+                    finally
+                    {
+                        if (connection != null)
+                        {
+                            connection.Close();
+                        }
+                    }
+
+                    if (AgregarConjuntoItemJuego(conjunto) == 0)
+                    {
+                        return 0;
+                    }
+                }
+            }
+
+            return 1;
+
+            
+            
+        }
+
+        public int AgregarConjuntoItemJuego(Conjunto conjunto)
+        {
+
+
+            foreach (Item item in conjunto.Items)
+            {
+
+
+                try
+                {
+
+                    connection = DB.connectToDB();
+
+                    command = connection.CreateCommand();
+                    command.CommandText = "SELECT ID_ITEM FROM TB_ITEM WHERE NOMBRE=@nombre";
+                    command.Parameters.AddWithValue("nombre", item.nombre);
+                    command.CommandType = CommandType.Text;
+
+                    connection.Open();
+
+                    MySqlDataReader reader = command.ExecuteReader();
+
+
+
+                    while (reader.Read())
+                    {
+                        item.idItem = Convert.ToInt32(reader[0]);
+                    }
+
+                    reader.Close();
+
+                    command = connection.CreateCommand();
+                    command.CommandText = "INSERT INTO TB_CONJUNTO_ITEM VALUES (null, @idItem, @idConjunto, @cupoMax, @montoMax, 0)";     
+                    command.Parameters.AddWithValue("idItem", item.idItem);
+                    command.Parameters.AddWithValue("idConjunto", conjunto.idConjunto);
+                    command.Parameters.AddWithValue("cupoMax", item.cupo);
+                    command.Parameters.AddWithValue("montoMax", item.monto);
+
+
+                    command.CommandType = CommandType.Text;
+
+                    
+
+
+                    return command.ExecuteNonQuery();
+
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+                finally
+                {
+                    if (connection != null)
+                    {
+                        connection.Close();
+                    }
+                }
+            }
+
+            
+            return 0;
+
+
         }
 
         public Juego Consultar(String nombreJuego)
         {
+
+            if (nombreJuego == null)
+            {
+                //Execpción atributo vacio
+            }
+
+
+
             Juego JuegoRespuesta = new Juego();
+
+
 
 
             try
@@ -93,7 +323,7 @@ namespace ING_service
                 }
 
 
-                
+
 
             }
             catch (Exception)
@@ -107,14 +337,22 @@ namespace ING_service
                     connection.Close();
                 }
             }
+            if (JuegoRespuesta.idJuego == 0)
+            {
+                //throw Execpcion Juego no existente
+            }
 
+            if (JuegoRespuesta.Estatus == 0)
+            {
+               
+                //throw Execpción Juego no activo
+            }
 
-
-            JuegoRespuesta.Items = ConsultarItems(JuegoRespuesta.idJuego);
-            JuegoRespuesta.Conjuntos = ConsultarConjunto(JuegoRespuesta.idJuego);
+            JuegoRespuesta.Items = ConsultarItems(JuegoRespuesta.idJuego); //Execpcion de juegos para items nulos o juegos sin items?
+            JuegoRespuesta.Conjuntos = ConsultarConjunto(JuegoRespuesta.idJuego); ////Execpcion para juegos sin conjuntos?
 
             return JuegoRespuesta;
-
+            
         }
 
         public List<Item> ConsultarItems(int idJuego)
